@@ -145,7 +145,6 @@ function cpuTurn() { //CPU
 }
 
 function updateAndCheckWin(index, col, row) { //Check Winning
-    console.log(index, col, row);
     columnCount[index][col] += 1;
     rowCount[index][row] += 1;
     if (col === row) {
@@ -154,7 +153,6 @@ function updateAndCheckWin(index, col, row) { //Check Winning
     if (col + row === GRID_LENGTH - 1) {
         diagnolCount[index][1] += 1;
     }
-    console.log(columnCount, rowCount, JSON.stringify(diagnolCount));
     if (
         columnCount[index][col] === GRID_LENGTH
         ||
