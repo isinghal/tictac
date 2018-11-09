@@ -26,6 +26,11 @@ let difficulty = 0;
 let cpuSum = 0;
 let playerSum = 0;
 
+let diagnolCount;
+let rowCount;
+let columnCount;
+
+
 function prompt(msg) {
     isWon = 1;
     document.getElementById('result').innerHTML = msg;
@@ -33,6 +38,9 @@ function prompt(msg) {
 
 function initializeGrid() {
     grid = [];
+    rowCount = Array.from(Array(2), () => new Array(GRID_LENGTH).fill(0));
+    columnCount = Array.from(Array(2), () => new Array(GRID_LENGTH).fill(0));
+    diagnolCount = Array.from(Array(2), () => [0, 0]);
     for (let colIdx = 0; colIdx < GRID_LENGTH; colIdx++) {
         const tempArray = [];
         for (let rowidx = 0; rowidx < GRID_LENGTH; rowidx++) {
@@ -87,13 +95,14 @@ function onBoxClick() {
     let newValue = 1;
     if (!grid[colIdx][rowIdx] && !isWon) {
         grid[colIdx][rowIdx] = newValue;
-        if (checkWin(1)) { //Checking if player won
+        if (updateAndCheckWin(0, parseInt(colIdx), parseInt(rowIdx))) { //Checking if player won
             prompt('You won');
         } else {
-            if (cpuTurn() === -1) {
+            let cpuMoves = cpuTurn();
+            if (cpuMoves === -1) {
                 prompt('Draw'); //No more Empty Cells
             }
-            if (checkWin(2)) { //Checking if CPU won
+            else if (updateAndCheckWin(1, ...cpuMoves)) { //Checking if CPU won
                 prompt('You Lost');
             }
         }
@@ -124,68 +133,37 @@ renderMainGrid();
 addClickHandlers();
 
 function cpuTurn() { //CPU
-    if (difficulty === 1) {// hard CPU
-        return playCpuHard();
-    } else {  //Easy mode
-        return playRandom();
-    }
-
-}
-
-function playRandom() {
-    for (i = 0; i <= 2; i++) {
-        for (j = 0; j <= 2; j++) {
+    for (i = 0; i < GRID_LENGTH; i++) {
+        for (j = 0; j < GRID_LENGTH; j++) {
             if (!grid[i][j]) {
                 grid[i][j] = 2;
-                return (i * 3) + j + 1;
+                return [i, j];
             }
         }
     }
     return -1;
 }
 
-function playCpuHard() {
-    if (!grid[1][1]) {
-        grid[1][1] = 2;
-        return 5;
+function updateAndCheckWin(index, col, row) { //Check Winning
+    console.log(index, col, row);
+    columnCount[index][col] += 1;
+    rowCount[index][row] += 1;
+    if (col === row) {
+        diagnolCount[index][0] += 1;
     }
-    else {
-        return playRandom();
+    if (col + row === GRID_LENGTH - 1) {
+        diagnolCount[index][1] += 1;
     }
-
-
-}
-
-function checkWin(value) { //Check Winning
-    if (grid[0][0] === value) {
-        if (grid[0][1] === value && grid[0][2] === value) {
-            return true;
-        }
-        if (grid[1][0] === value && grid[2][0] === value) {
-            return true;
-        }
-        if (grid[1][1] === value && grid[2][2] === value) {
-            return true;
-        }
-    }
-    if (grid[1][1] === value) {
-        if (grid[1][0] === value && grid[1][2] === value) {
-            return true;
-        }
-        if (grid[0][1] === value && grid[2][1] === value) {
-            return true;
-        }
-        if (grid[0][2] === value && grid[2][0] === value) {
-            return true;
-        }
-    }
-    if (grid[2][2] === value) {
-        if (grid[0][2] === value && grid[1][2] === value) {
-            return true;
-        }
-        if (grid[2][0] === value && grid[2][1] === value) {
-            return true;
-        }
+    console.log(columnCount, rowCount, JSON.stringify(diagnolCount));
+    if (
+        columnCount[index][col] === GRID_LENGTH
+        ||
+        rowCount[index][row] === GRID_LENGTH
+        ||
+        diagnolCount[index][0] === GRID_LENGTH
+        ||
+        diagnolCount[index][1] === GRID_LENGTH) {
+        return true;
     }
     return false;
 }
